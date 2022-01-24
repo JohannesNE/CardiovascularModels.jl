@@ -6,7 +6,7 @@ end
 function Compartment(; name, 
     # Parameters
     R_out::Float64,
-    valved::Bool = false)
+    valve_out::Bool = false)
 
     @named in = Con()
     @named out = Con()
@@ -16,7 +16,7 @@ function Compartment(; name,
     sts = @variables V(t) P(t)
 
     
-    if valved
+    if valve_out
         eq_Q_out = out.Q ~ ((P - out.P) / R_out) * (P > out.P)
     else
         eq_Q_out = out.Q ~ ((P - out.P) / R_out)
@@ -36,9 +36,9 @@ function Vessel(; name,
     Ees::Float64, 
     V0::Float64, 
     R_out::Float64,
-    valved::Bool = false)
+    valve_out::Bool = false)
 
-    @named compartment = Compartment(R_out = R_out, valved = valved)
+    @named compartment = Compartment(R_out = R_out, valve_out = valve_out)
     @unpack V, P = compartment
 
     ps = @parameters (Ees = Ees, V0 = V0)
@@ -69,10 +69,10 @@ function Ventricle(; name,
     λ::Float64,
     P0::Float64 = 0.,
     R_out::Float64,
-    valved::Bool = true
+    valve_out::Bool = true
     )
 
-    @named compartment = Compartment(R_out = R_out, valved = valved)
+    @named compartment = Compartment(R_out = R_out, valve_out = valve_out)
     @unpack V, P = compartment
 
     ps = @parameters (
@@ -107,14 +107,14 @@ function Const_Pressure(; name,
     # Parameters
     P::Float64, 
     R_out::Float64,
-    valved::Bool = false)
+    valve_out::Bool = false)
 
     @named in = Con()
     @named out = Con()
 
     ps = @parameters (P = P)
 
-    if valved
+    if valve_out
         eq_Q_out = out.Q ~ ((P - out.P) / R_out) * (P > out.P)
     else
         eq_Q_out = out.Q ~ ((P - out.P) / R_out)
