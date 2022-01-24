@@ -1,0 +1,13 @@
+name = "CardiovascularModels"
+uuid = "77ddac30-6b02-4ad2-8af6-53f96db8cb6d"
+authors = ["Johannes Enevoldsen <johannes.ne@gmail.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
