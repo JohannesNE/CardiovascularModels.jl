@@ -120,7 +120,7 @@ plot_v2 = plot(sol, vars=[(m32ml, 0, vein.V)], tspan =  (1,6));
 plot(plot_v1, plot_v2, layout = (2,1))
 ```
 
-![](figures/tree_compartment_model_3_1.png)
+![](figures/three_compartment_model_3_1.png)
 
 
 
@@ -131,4 +131,4 @@ plot_p2 = plot(sol, vars=[(pascal2mmhg, 0, vein.P)], tspan =  (1,6));
 plot(plot_p1, plot_p2, layout = (2,1))
 ```
 
-![](figures/tree_compartment_model_4_1.png)
+![](figures/three_compartment_model_4_1.png)
