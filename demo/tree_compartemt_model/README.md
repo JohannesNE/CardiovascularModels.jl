@@ -1,4 +1,4 @@
-# Simple 3 compartment model
+# Simple 3-compartment model
 
 A simple model with a ventricle, an artery (aorta) and a vein, connected with some resistance between them.
 
