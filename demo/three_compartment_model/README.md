@@ -3,7 +3,7 @@
 A simple model with a ventricle, an artery (aorta) and a vein, connected with some resistance between them.
 
 ```julia
-using DifferentialEquations, ModelingToolkit, CardiovascularModels, Plots
+using OrdinaryDiffEq, ModelingToolkit, CardiovascularModels, Plots
 
 @variables t
 D = Differential(t)

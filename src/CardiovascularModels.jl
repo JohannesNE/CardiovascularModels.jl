@@ -1,6 +1,6 @@
 module CardiovascularModels
 
-using DifferentialEquations, ModelingToolkit, OrdinaryDiffEq
+using ModelingToolkit, OrdinaryDiffEq
 
 @parameters t
 D = Differential(t)
