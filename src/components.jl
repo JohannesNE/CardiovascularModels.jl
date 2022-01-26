@@ -31,6 +31,16 @@ function Compartment(; name,
     compose(ODESystem(eqs, t, [V, P], ps; name), in, out)  
 end
 
+"""
+Vessel model (e.g. artery or vein)
+
+# Arguments
+   - `Ees`: Elasticity.
+   - `Vd`: Unstressed volume (volume with no pressure).
+   - `R_out`: Resistance at outflow orifice.
+   - `valve_out::Bool`: Valve at outflow orifice.
+
+"""
 function Vessel(; name, 
     # Parameters
     Ees::Float64, 
@@ -52,10 +62,10 @@ function Vessel(; name,
 end
 
 """
-Generate a model of a ventricle
+Ventricle model
 
 # Arguments
-   - `Ees`: Maximum elasticitiy (systole).
+   - `Ees`: Maximum elasticity (systole).
    - `Vd`: (Unstressed volume) Volume where not contraction can occour.
    - `V0`: Volume with no passive elasticitiy.
    - `λ`: ?. Something diastolic
