@@ -1,6 +1,11 @@
 using CardiovascularModels
 using Test
 
-@testset "CardiovascularModels.jl" begin
-    # Write your tests here.
+using OrdinaryDiffEq, ModelingToolkit
+
+@variables t
+D = Differential(t)
+
+@testset "3-compartment model" begin
+    include("test-three-compartment.jl")
 end
