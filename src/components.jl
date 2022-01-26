@@ -34,17 +34,17 @@ end
 function Vessel(; name, 
     # Parameters
     Ees::Float64, 
-    V0::Float64, 
+    Vd::Float64, 
     R_out::Float64,
     valve_out::Bool = false)
 
     @named compartment = Compartment(R_out = R_out, valve_out = valve_out)
     @unpack V, P = compartment
 
-    ps = @parameters (Ees = Ees, V0 = V0)
+    ps = @parameters (Ees = Ees, Vd = Vd)
 
     eqs = [
-        P ~ max(0, Ees*(V-V0))
+        P ~ max(0, Ees*(V-Vd))
     ]
 
     extend(ODESystem(eqs, t, [V, P], ps; name), compartment)  

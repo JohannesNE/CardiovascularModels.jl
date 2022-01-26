@@ -16,14 +16,14 @@ D = Differential(t)
 @named card_driver = Driver()
 
 # Aorta
-@named aorta = Vessel(Ees = 200e6, V0 = 100e-6, R_out = 50e6)
+@named aorta = Vessel(Ees = 200e6, Vd = 100e-6, R_out = 50e6)
 
 eqs_driver = [
     l_ventricle.drv ~ card_driver.contraction
 ]
 
 #@named vein = Const_Pressure(P = 1e3, R_out = 6e6, valve_out = true)
-@named vein = Vessel(Ees = 5e6, V0 = 500e-6, R_out = 10e6, valve_out = true)
+@named vein = Vessel(Ees = 5e6, Vd = 500e-6, R_out = 10e6, valve_out = true)
 
 
 
