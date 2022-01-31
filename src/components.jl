@@ -1,5 +1,8 @@
 @connector function Con(;name)
-    sts = @variables P(t), Q(t) [connect = Flow]
+    sts = @variables begin
+        P(t) 
+        Q(t), [connect = Flow]
+    end
     ODESystem(Equation[], t, sts, []; name=name)
 end
 
@@ -15,16 +18,16 @@ function Compartment(; name,
 
     sts = @variables V(t) P(t)
 
-    
+    # Flow is positive into the compartment.
     if valve_out
-        eq_Q_out = out.Q ~ ((P - out.P) / R_out) * (P > out.P)
+        eq_Q_out = out.Q ~ -((P - out.P) / R_out) * (P > out.P)
     else
-        eq_Q_out = out.Q ~ ((P - out.P) / R_out)
+        eq_Q_out = out.Q ~ -((P - out.P) / R_out)
     end
 
     eqs = [
         eq_Q_out,
-        D(V) ~ in.Q - out.Q,
+        D(V) ~ in.Q + out.Q,
         in.P ~ P
     ]
 
