@@ -139,27 +139,17 @@ end
 
 function Const_Pressure(; name, 
     # Parameters
-    P::Float64, 
-    R_out::Float64,
-    valve_out::Bool = false)
+    P::Float64)
 
-    @named in = Con()
     @named out = Con()
 
     ps = @parameters (P = P)
 
-    if valve_out
-        eq_Q_out = out.Q ~ ((P - out.P) / R_out) * (P > out.P)
-    else
-        eq_Q_out = out.Q ~ ((P - out.P) / R_out)
-    end
-
     eqs = [
-        eq_Q_out,
-        in.P ~ P
+        out.P ~ P
     ]
 
-    compose(ODESystem(eqs, t, [], ps; name), in, out)  
+    compose(ODESystem(eqs, t, [], ps; name), out)  
 
 end
 
