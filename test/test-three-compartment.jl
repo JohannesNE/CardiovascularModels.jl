@@ -23,17 +23,13 @@ eqs_driver = [
 @named vein = Vessel(Ees = 5e6, Vd = 500e-6)
 @named mitral_valve = Valve(R = 10e6)
 
-
-
-eqs_con = [
-    connect(vein.out, mitral_valve.in),
-    connect(mitral_valve.out, l_ventricle.in),
-    connect(l_ventricle.out, aortic_valve.in),
-    connect(aortic_valve.out, aorta.in),
-    connect(aorta.out, systemic_resistance.in),
-    connect(systemic_resistance.out, vein.in)
-]
-
+eqs_con = serial_connect(vein, 
+    mitral_valve, 
+    l_ventricle,
+    aortic_valve,
+    aorta,
+    systemic_resistance,
+    vein)
 
 eqs_comb = [eqs_driver; eqs_con]
 
@@ -51,3 +47,5 @@ time_span = (0.0, 10.0)
 problem = ODEProblem(structural_simplify(connected), volume_start, time_span, [])
 
 sol = solve(problem, Tsit5(), dtmax = 0.01, reltol = 1e-6)
+
+# Plots.plot(sol)
