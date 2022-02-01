@@ -78,7 +78,7 @@ function Vessel(; name,
     Vd::Float64)
 
     @named compartment = Compartment()
-    @unpack V, P, in, out = compartment
+    @unpack V, P = compartment
 
     ps = @parameters (Ees = Ees, Vd = Vd)
 
