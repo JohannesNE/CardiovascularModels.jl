@@ -76,7 +76,7 @@ m32ml (generic function with 1 method)
 ```julia
 plot_v1 = plot(sol, vars=[(m32ml, 0, l_ventricle.V), (m32ml, 0, aorta.V)], tspan =  (1,6));
 plot_v2 = plot(sol, vars=[(m32ml, 0, vein.V)], tspan =  (1,6));
-plot(plot_v1, plot_v2, layout = (2,1))
+plot(plot_v1, plot_v2, layout = (2,1), ylabel = "ml")
 ```
 
 ![](figures/three_compartment_model_3_1.png)
@@ -87,7 +87,7 @@ plot(plot_v1, plot_v2, layout = (2,1))
 ```julia
 plot_p1 = plot(sol, vars=[(pascal2mmhg, 0,l_ventricle.P), (pascal2mmhg, 0,aorta.P)], tspan =  (1,6));
 plot_p2 = plot(sol, vars=[(pascal2mmhg, 0, vein.P)], tspan =  (1,6));
-plot(plot_p1, plot_p2, layout = (2,1))
+plot(plot_p1, plot_p2, layout = (2,1), ylabel = "mmHg")
 ```
 
 ![](figures/three_compartment_model_4_1.png)

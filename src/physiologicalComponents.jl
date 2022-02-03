@@ -1,44 +1,3 @@
-@connector function Con(;name)
-    sts = @variables begin
-        P(t) 
-        Q(t), [connect = Flow]
-    end
-    ODESystem(Equation[], t, sts, []; name=name)
-end
-
-function Compartment(; name)
-
-    @named in = Con()
-    @named out = Con()
-
-    sts = @variables V(t) P(t)
-
-    # Flow is positive into the component.
-    eqs = [
-        D(V) ~ in.Q + out.Q,
-        in.P ~ P,
-        in.P ~ out.P
-    ]
-
-    compose(ODESystem(eqs, t, [V, P], []; name), in, out)  
-end
-
-function VolumelessComponent(; name)
-    @named in = Con()
-    @named out = Con()
-
-    sts = @variables Q(t) ΔP(t)
-
-    # Flow is positive into the component.
-    eqs = [
-        0 ~ in.Q + out.Q,
-        Q ~ in.Q,
-        ΔP ~ in.P - out.P
-    ]
-
-    compose(ODESystem(eqs, t, sts, []; name), in, out)  
-end
-
 function Resistor(; name, R::Float64)
     @named component = VolumelessComponent()
     @unpack Q, ΔP = component
@@ -77,7 +36,7 @@ function Vessel(; name,
     Ees::Float64, 
     Vd::Float64)
 
-    @named compartment = Compartment()
+    @named compartment = VascularCompartment()
     @unpack V, P = compartment
 
     ps = @parameters (Ees = Ees, Vd = Vd)
@@ -108,7 +67,7 @@ function Ventricle(; name,
     P0::Float64 = 0.
     )
 
-    @named compartment = Compartment()
+    @named compartment = VascularCompartment()
     @unpack V, P = compartment
 
     ps = @parameters (
