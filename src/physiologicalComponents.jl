@@ -34,18 +34,19 @@ Vessel model (e.g. artery or vein)
 function Vessel(; name, 
     # Parameters
     Ees::Float64, 
-    Vd::Float64)
+    Vd::Float64,
+    ext_pressure=0.)
 
-    @named compartment = VascularCompartment()
-    @unpack V, P = compartment
+    @named compartment = VascularCompartment(;ext_pressure)
+    @unpack V, P_tm = compartment
 
     ps = @parameters (Ees = Ees, Vd = Vd)
 
     eqs = [
-        P ~ max(0, Ees*(V-Vd))
+        P_tm ~ max(0, Ees*(V-Vd))
     ]
 
-    extend(ODESystem(eqs, t, [V, P], ps; name), compartment)  
+    extend(ODESystem(eqs, t, [], ps; name), compartment)  
 end
 
 """
@@ -64,11 +65,13 @@ function Ventricle(; name,
     Vd::Float64, 
     V0::Float64, 
     λ::Float64,
-    P0::Float64 = 0.
+    P0::Float64 = 0.,
+    # Arguments that are passed along to PressurisedCompartment
+    ext_pressure = 0.,
     )
 
-    @named compartment = VascularCompartment()
-    @unpack V, P = compartment
+    @named compartment = VascularCompartment(;ext_pressure)
+    @unpack V, P_tm = compartment
 
     ps = @parameters (
         Ees = Ees, 
@@ -79,8 +82,6 @@ function Ventricle(; name,
     )
 
     sts = @variables (
-        V(t), 
-        P(t),
         drv(t),
         Pes(t),
         Ped(t)
@@ -89,10 +90,10 @@ function Ventricle(; name,
     eqs = [
         Pes ~ Ees*(V-Vd),
         Ped ~ P0*(exp(λ*(V-V0))-1.0),
-        P ~ drv*Pes+Ped
+        P_tm ~ drv*Pes+Ped
     ]
 
-    extend(ODESystem(eqs, t, [V, P, drv], ps; name), compartment)  
+    extend(ODESystem(eqs, t, [drv], ps; name), compartment)  
     
 end
 
