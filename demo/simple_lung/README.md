@@ -4,7 +4,7 @@ A simple model with a ventricle, an artery and a vein, connected with some resis
 The vein is under a cyclic pressure immitating ventilation. 
 The simulates a simple arterial pressure variation.
 
-```julia; results="hidden"
+```julia
 using OrdinaryDiffEq, ModelingToolkit, CardiovascularModels, Plots
 
 @variables t
@@ -67,10 +67,19 @@ problem = ODEProblem(structural_simplify(connected), volume_start, time_span, []
 sol = solve(problem, Tsit5(), dtmax = 0.01, reltol = 1e-6)
 ```
 
-```julia 
+
+```julia
 pascal2mmhg(t, pascal) = t, pascal * 0.00750062
 m32ml(t, m3) = t, m3 * 1e6
 ```
+
+```
+m32ml (generic function with 1 method)
+```
+
+
+
+
 
 ## Volume plots [ml]
 ```julia
@@ -79,6 +88,10 @@ plot_v2 = plot(sol, vars=[(m32ml, 0, pulmonary_vein.V)], tspan =  (1,10));
 plot(plot_v1, plot_v2, layout = (2,1), ylabel = "ml")
 ```
 
+![](figures/simple_lung_3_1.png)
+
+
+
 ## Pressure plots [mmHg]
 ```julia
 plot_p1 = plot(sol, vars=[(pascal2mmhg, 0,r_ventricle.P), (pascal2mmhg, 0, pulmonary_artery.P)], tspan =  (1,10));
@@ -86,9 +99,15 @@ plot_p2 = plot(sol, vars=[(pascal2mmhg, 0, pulmonary_vein.P)], tspan =  (1,10));
 plot(plot_p1, plot_p2, layout = (2,1), ylabel = "mmHg")
 ```
 
+![](figures/simple_lung_4_1.png)
+
+
+
 ## Flow plots [ml/s]
 ```julia
 plot_Q1 = plot(sol, vars=[(m32ml, 0, r_ventricle.in.Q), (m32ml, 0, pulmonary_artery.in.Q)], tspan =  (1,10));
 plot_Q2 = plot(sol, vars=[(m32ml, 0, pulmonary_vein.in.Q)], tspan =  (1,10));
 plot(plot_Q1, plot_Q2, layout = (2,1), ylabel = "ml")
 ```
+
+![](figures/simple_lung_5_1.png)
