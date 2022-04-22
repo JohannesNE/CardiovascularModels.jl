@@ -2,7 +2,7 @@
 
 A simple model with a ventricle, an artery and a vein, connected with some resistance between them.
 The vein is under a cyclic pressure immitating ventilation. 
-The simulates a simple arterial pressure variation.
+This simulates a simple arterial pressure variation.
 
 ```julia
 using OrdinaryDiffEq, ModelingToolkit, CardiovascularModels, Plots
@@ -16,7 +16,7 @@ D = Differential(t)
 
 @named card_driver = Driver()
 
-@named pulmonary_valve = Valve(R = 6e6)
+@named pulmonary_valve = Valve(R = 4e6)
 
 # Pulmonary artery
 @named pulmonary_artery = Vessel(Ees = 200e6, Vd = 100e-6)
@@ -107,7 +107,7 @@ plot(plot_p1, plot_p2, layout = (2,1), ylabel = "mmHg")
 ```julia
 plot_Q1 = plot(sol, vars=[(m32ml, 0, r_ventricle.in.Q), (m32ml, 0, pulmonary_artery.in.Q)], tspan =  (1,10));
 plot_Q2 = plot(sol, vars=[(m32ml, 0, pulmonary_vein.in.Q)], tspan =  (1,10));
-plot(plot_Q1, plot_Q2, layout = (2,1), ylabel = "ml")
+plot(plot_Q1, plot_Q2, layout = (2,1), ylabel = "ml/s")
 ```
 
 ![](figures/simple_lung_5_1.png)
