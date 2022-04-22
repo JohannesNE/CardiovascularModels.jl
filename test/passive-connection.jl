@@ -3,7 +3,7 @@ using ModelingToolkit, OrdinaryDiffEq, CardiovascularModels
 @variables t
 D = Differential(t)
 
-@named vessel1 = Vessel(Ees = 5e6, Vd = 0.0)
+@named vessel1 = Vessel(Ees = 5e6, Vd = 0.0, ext_pressure = 1e2)
 @named resistor = Resistor(R = 10e6)
 @named vessel2 = Vessel(Ees = 1e7, Vd = 0.0)
 
@@ -27,4 +27,4 @@ problem = ODEProblem(structural_simplify(test1), volume_start, time_span, [])
 
 sol = solve(problem, Tsit5(), dtmax = 0.01, reltol = 1e-6)
 
-# Plots.plot(sol)
+Plots.plot(sol)
