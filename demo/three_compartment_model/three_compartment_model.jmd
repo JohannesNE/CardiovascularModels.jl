@@ -12,7 +12,7 @@ D = Differential(t)
 @named l_ventricle = Ventricle(Ees = 200e6,
     Vd = 0., V0 = 0., λ = 33e3, P0 = 10.)
 
-@named card_driver = Driver()
+@named card_driver = automaticDriver()
 
 @named aortic_valve = Valve(R = 6e6)
 

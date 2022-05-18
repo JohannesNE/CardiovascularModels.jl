@@ -114,21 +114,58 @@ function Const_Pressure(; name,
 end
 
 # Register cardiac driver
-_e_card(t, A, B, C) = A*exp(-B*(t-C)^2)
-_e_card_rep(t, A, B, C, cycle_len = 1.0) = _e_card(t % cycle_len, A, B, C)
-@register _e_card_rep(t, A, B, C) 
+e_card(t; A = 11.0, B = 80.0, C = 0.27) = A*exp(-B*(t-C)^2)
+e_card_rep(t; A = 1.0, B = 80.0, C = 0.27, cycle_len = 1.0) = e_card(t % cycle_len; A = A, B = B, C = C)
+@register_symbolic e_card_rep(t, A, B, C, cycle_len) 
 
-function Driver(; name,
+time_since_event = function(t, event_times::Vector{Float64})
+    last_event = findlast(x -> x < t, event_times)
+
+    if last_event === nothing
+        # If no last event, we are before the first event
+        # Return zero as e_card(0) is 0.
+        return 0
+    end
+
+    return t - event_times[last_event]
+end
+
+function e_card_qrs(t; A = 1.0, B = 80.0, C = 0.27, qrs_times::Vector{Float64})
+    t_event = time_since_event(t, qrs_times)
+    return e_card(t_event, A = A, B = B, C = C) 
+end
+
+@register_symbolic e_card_qrs(t, A, B, C, qrs_times) 
+
+function automaticDriver(; name,
     A::Float64 = 1., 
     B::Float64 = 80., 
-    C::Float64 = 0.27)
+    C::Float64 = 0.27,
+    cycle_len = 1.0)
 
     ps = @parameters (A=A, B=B, C=C)
 
     sts = @variables contraction(t)
 
     eqs = [
-        contraction ~ _e_card_rep(t, A, B, C)
+        contraction ~ e_card_rep(t, A = A, B = B, C = C, cycle_len = cycle_len)
+    ]
+
+    ODESystem(eqs, t, [contraction], ps; name)  
+end
+
+function qrsDriver(; name,
+    A::Float64 = 1., 
+    B::Float64 = 80., 
+    C::Float64 = 0.27,
+    qrs_times::Vector{Float64})
+
+    ps = @parameters (A=A, B=B, C=C)
+
+    sts = @variables contraction(t)
+
+    eqs = [
+        contraction ~ e_card_qrs(t, A = A, B = B, C = C, qrs_times = qrs_times)
     ]
 
     ODESystem(eqs, t, [contraction], ps; name)  
