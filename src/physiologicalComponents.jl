@@ -118,25 +118,6 @@ e_card(t; A = 11.0, B = 80.0, C = 0.27) = A*exp(-B*(t-C)^2)
 e_card_rep(t; A = 1.0, B = 80.0, C = 0.27, cycle_len = 1.0) = e_card(t % cycle_len; A = A, B = B, C = C)
 @register_symbolic e_card_rep(t, A, B, C, cycle_len) 
 
-time_since_event = function(t, event_times::Vector{Float64})
-    last_event = findlast(x -> x < t, event_times)
-
-    if last_event === nothing
-        # If no last event, we are before the first event
-        # Return zero as e_card(0) is 0.
-        return 0
-    end
-
-    return t - event_times[last_event]
-end
-
-function e_card_qrs(t; A = 1.0, B = 80.0, C = 0.27, qrs_times::Vector{Float64})
-    t_event = time_since_event(t, qrs_times)
-    return e_card(t_event, A = A, B = B, C = C) 
-end
-
-@register_symbolic e_card_qrs(t, A, B, C, qrs_times) 
-
 function automaticDriver(; name,
     A::Float64 = 1., 
     B::Float64 = 80., 
@@ -153,6 +134,15 @@ function automaticDriver(; name,
 
     ODESystem(eqs, t, [contraction], ps; name)  
 end
+
+function e_card_qrs(t; A = 1.0, B = 80.0, C = 0.27, qrs_times::Vector{Float64})
+    # Sum of the cardiac driver effect over all time_since_qrs.
+    # This works since the driver is essetially zero shortly after each QRS.
+    t_since_qrs = max.(0, t .- qrs_times) 
+    return sum(e_card.(t_since_qrs, A = A, B = B, C = C)) 
+end
+
+@register_symbolic e_card_qrs(t, A, B, C, qrs_times) 
 
 function qrsDriver(; name,
     A::Float64 = 1., 
