@@ -14,7 +14,7 @@ D = Differential(t)
 @named r_ventricle = Ventricle(Ees = 50e6,
     Vd = 0., V0 = 0., λ = 50e3, P0 = 5.)
 
-@named card_driver = automaticDriver()
+@named card_driver =automaticDriver()
 
 @named pulmonary_valve = Valve(R = 4e6)
 

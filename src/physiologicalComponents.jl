@@ -114,7 +114,7 @@ function Const_Pressure(; name,
 end
 
 # Register cardiac driver
-e_card(t; A = 11.0, B = 80.0, C = 0.27) = A*exp(-B*(t-C)^2)
+e_card(t; A = 1.0, B = 80.0, C = 0.27) = A*exp(-B*(t-C)^2)
 e_card_rep(t; A = 1.0, B = 80.0, C = 0.27, cycle_len = 1.0) = e_card(t % cycle_len; A = A, B = B, C = C)
 @register_symbolic e_card_rep(t, A, B, C, cycle_len) 
 
@@ -144,6 +144,15 @@ end
 
 @register_symbolic e_card_qrs(t, A, B, C, qrs_times) 
 
+"""
+QRS driver
+
+# Arguments
+    - `A`: Amplitude.
+    - `B`: Acceleration.
+    - `C`: Time (seconds) from activation (QRS) to peak.
+
+"""
 function qrsDriver(; name,
     A::Float64 = 1., 
     B::Float64 = 80., 
@@ -155,7 +164,9 @@ function qrsDriver(; name,
     sts = @variables contraction(t)
 
     eqs = [
-        contraction ~ e_card_qrs(t, A = A, B = B, C = C, qrs_times = qrs_times)
+        contraction ~ e_card_qrs(t, 
+                                 A = A, B = B, C = C, 
+                                 qrs_times = qrs_times)
     ]
 
     ODESystem(eqs, t, [contraction], ps; name)  
