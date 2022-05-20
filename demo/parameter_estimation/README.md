@@ -5,19 +5,22 @@
 In this demo we use Touring.jl to estimate two parameters of a 3-compartment model.
 A simple model with a ventricle, an artery (aorta) and a vein, connected with some resistance between them.
 
-```julia; results="hidden"
+```julia
 using OrdinaryDiffEq, ModelingToolkit, CardiovascularModels 
 using Plots, StatsPlots
 using Turing
 using CSV, DataFrames, DataFramesMeta
 ```
 
+
+
+
 ## Load observed data
 
 Load arterial blood pressure waveform, ventilator pressure and volume waveform, and 
 timings of QRS-complexes (initiation of the heart beat).
 
-```{julia}
+```julia
 abp = CSV.File("data/abp.csv") |> DataFrame 
 vent = CSV.File("data/vent.csv") |> DataFrame
 qrs = CSV.File("data/qrs.csv") |> DataFrame
@@ -33,9 +36,13 @@ airway_vol_plot = plot(vent.seconds, vent.volume, labels = "Airway volume");
 plot(abp_plot, airway_vol_plot, layout = (2,1))
 ```
 
+![](figures/parameter_estimation_2_1.png)
+
+
+
 Now we compose the model
 
-```julia; results="hidden"
+```julia
 @variables t
 D = Differential(t)
 
@@ -91,10 +98,19 @@ problem = ODEProblem(structural_simplify(connected), volume_start, time_span, []
 sol = solve(problem, AutoTsit5(Rosenbrock23()); dtmax = 0.01, reltol = 1e-6)
 ```
 
-```julia 
+
+```julia
 pascal2mmhg(t, pascal) = t, pascal * 0.00750062
 m32ml(t, m3) = t, m3 * 1e6
 ```
+
+```
+m32ml (generic function with 1 method)
+```
+
+
+
+
 # Plot of solution before parameter estimation
 
 ## Volume plots [ml]
@@ -104,12 +120,20 @@ plot_v2 = plot(sol, vars=[(m32ml, 0, vein.V)], tspan =  (1,6));
 plot(plot_v1, plot_v2, layout = (2,1), ylabel = "ml", legend = :outertop)
 ```
 
+![](figures/parameter_estimation_5_1.png)
+
+
+
 ## Pressure plots [mmHg]
 ```julia
 plot_p1 = plot(sol, vars=[(pascal2mmhg, 0,l_ventricle.P), (pascal2mmhg, 0,aorta.P)], tspan =  (1,6));
 plot_p2 = plot(sol, vars=[(pascal2mmhg, 0, vein.P)], tspan =  (1,6));
 plot(plot_p1, plot_p2, layout = (2,1), ylabel = "mmHg", legend = :outertop)
 ```
+
+![](figures/parameter_estimation_6_1.png)
+
+
 
 # Parameter estimation with Touring.jl
 
@@ -179,6 +203,10 @@ chain = sample(model, NUTS(), MCMCSerial(), 500, 2; progress=true, init_params =
 plot(chain)
 ```
 
+![](figures/parameter_estimation_7_1.png)
+
+
+
 Get the mean of the posterior distribution of the parameters.
 We should of course explore the effect of the entire distribution,
 but this is just a quick example. For an idea of how to better explore potential solutions, 
@@ -206,3 +234,5 @@ plot_p1 = plot(sol_fit, vars=[(pascal2mmhg, 0,aorta.P)], tspan =  (1,6),
 
 plot!(plot_p1, abp.seconds, abp.ABP, label = "Observed")
 ```
+
+![](figures/parameter_estimation_8_1.png)
