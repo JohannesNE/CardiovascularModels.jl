@@ -14,12 +14,11 @@ using CSV, DataFrames, DataFramesMeta
 
 ## Load observed data
 
-Load arterial blood pressure waveform, ventilator pressure and volume waveform, and 
+Load arterial blood pressure waveform and 
 timings of QRS-complexes (initiation of the heart beat).
 
 ```{julia}
 abp = CSV.File("data/abp.csv") |> DataFrame 
-vent = CSV.File("data/vent.csv") |> DataFrame
 qrs = CSV.File("data/qrs.csv") |> DataFrame
 
 # Convert pressure to Pascal
@@ -27,10 +26,7 @@ mmHg2pascal(mmHg) = mmHg * 133.322
 @transform!(abp, :ABP_pascal = mmHg2pascal.(:ABP))
 
 abp_plot = plot(abp.seconds, abp.ABP, labels = "ABP");
-vline!(abp_plot, qrs.seconds, labels = "QRS");
-airway_vol_plot = plot(vent.seconds, vent.volume, labels = "Airway volume");
-
-plot(abp_plot, airway_vol_plot, layout = (2,1))
+vline!(abp_plot, qrs.seconds, labels = "QRS")
 ```
 
 Now we compose the model
