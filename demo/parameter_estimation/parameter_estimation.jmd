@@ -2,7 +2,7 @@
 
   > **Notice**, I do not really know how to do this. This aproach may be incorrect and is most likely highly inefficient 
 
-In this demo we use Touring.jl to estimate two parameters of a 3-compartment model.
+In this demo we use Turing.jl to estimate two parameters of a 3-compartment model.
 A simple model with a ventricle, an artery (aorta) and a vein, connected with some resistance between them.
 
 ```julia; results="hidden"
