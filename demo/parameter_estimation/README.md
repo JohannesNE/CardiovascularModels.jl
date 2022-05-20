@@ -46,8 +46,8 @@ Now we compose the model
 @variables t
 D = Differential(t)
 
-#left Ventricle
-@named l_ventricle = Ventricle(Ees = 200e6,
+# Ventricle
+@named ventricle = Ventricle(Ees = 200e6,
     Vd = 0., V0 = 0., λ = 33e3, P0 = 10.)
 
 # This cardia driver function uses a vector of qrs complexes 
@@ -62,7 +62,7 @@ D = Differential(t)
 @named systemic_resistance = Resistor(R = 50e6)
 
 eqs_driver = [
-    l_ventricle.drv ~ card_driver.contraction
+    ventricle.drv ~ card_driver.contraction
 ]
 
 @named vein = Vessel(Ees = 5e6, Vd = 500e-6)
@@ -70,11 +70,11 @@ eqs_driver = [
 
 # Connect systems in series.
 # vein.out -> mitral_valve.in
-# mitral_valve.out -> l_ventricle.in
+# mitral_valve.out -> ventricle.in
 # etc.
 eqs_con = serial_connect(vein, 
     mitral_valve, 
-    l_ventricle,
+    ventricle,
     aortic_valve,
     aorta,
     systemic_resistance,
@@ -83,14 +83,14 @@ eqs_con = serial_connect(vein,
 eqs_comb = [eqs_driver; eqs_con]
 
 # ODE parameters
-volume_start = [l_ventricle.V => 1e-4, 
+volume_start = [ventricle.V => 1e-4, 
     aorta.V => 1.5e-4,
     vein.V => 2e-3]
 time_span = (0.0, 10.0)
 
 @named hemo_sys = ODESystem(eqs_comb)
 
-@named connected = compose(hemo_sys, l_ventricle, card_driver, 
+@named connected = compose(hemo_sys, ventricle, card_driver, 
                             aortic_valve, aorta, systemic_resistance, vein, mitral_valve)
 
 problem = ODEProblem(structural_simplify(connected), volume_start, time_span, [])
@@ -115,7 +115,7 @@ m32ml (generic function with 1 method)
 
 ## Volume plots [ml]
 ```julia
-plot_v1 = plot(sol, vars=[(m32ml, 0, l_ventricle.V), (m32ml, 0, aorta.V)], tspan =  (1,6));
+plot_v1 = plot(sol, vars=[(m32ml, 0, ventricle.V), (m32ml, 0, aorta.V)], tspan =  (1,6));
 plot_v2 = plot(sol, vars=[(m32ml, 0, vein.V)], tspan =  (1,6));
 plot(plot_v1, plot_v2, layout = (2,1), ylabel = "ml", legend = :outertop)
 ```
@@ -126,7 +126,7 @@ plot(plot_v1, plot_v2, layout = (2,1), ylabel = "ml", legend = :outertop)
 
 ## Pressure plots [mmHg]
 ```julia
-plot_p1 = plot(sol, vars=[(pascal2mmhg, 0,l_ventricle.P), (pascal2mmhg, 0,aorta.P)], tspan =  (1,6));
+plot_p1 = plot(sol, vars=[(pascal2mmhg, 0,ventricle.P), (pascal2mmhg, 0,aorta.P)], tspan =  (1,6));
 plot_p2 = plot(sol, vars=[(pascal2mmhg, 0, vein.P)], tspan =  (1,6));
 plot(plot_p1, plot_p2, layout = (2,1), ylabel = "mmHg", legend = :outertop)
 ```
@@ -140,7 +140,7 @@ plot(plot_p1, plot_p2, layout = (2,1), ylabel = "mmHg", legend = :outertop)
 We use Turing.jl to estimate four of the model parameters.
 
 - aorta.Ees is the elasticity of the aorta; the high pressure vessel in the system.
-- l_ventricle.Ees is the extra elasticity of the left ventricle during maximum contraction.
+- ventricle.Ees is the extra elasticity of the ventricle during maximum contraction.
 - systemic_resistance.R is the resistance of the systemic resistance.
 - C is the time (seconds) from the QRS-complex (initiation of the heart beat) the maximum 
   contraction.
@@ -158,8 +158,8 @@ p_order = parameters(connected)
     sigma ~ Gamma(1.5, 2) # rescaled by 1/2000
     # Ees is the elasticity of the aorta.
     aorta_Ees ~ truncated(Normal(1, 0.5), 0, 10) # rescaled by 1/200e6
-    # l_ventricle_Ees is the elasticity of the left ventricle during contraction
-    l_ventricle_Ees ~ truncated(Normal(1, 0.5), 0, 10) # rescaled by 1/200e6
+    # ventricle_Ees is the elasticity of the ventricle during contraction
+    ventricle_Ees ~ truncated(Normal(1, 0.5), 0, 10) # rescaled by 1/200e6
     systemic_resistance_R ~ truncated(Normal(1, 0.2), 0, 100) #rescaled by 1/50e6
     # C is the time from QRS to peak contraction
     C ~ truncated(Normal(0.2, 0.1), 0, 1)
@@ -167,7 +167,7 @@ p_order = parameters(connected)
     # Update parameters.
     # varmap_to_vars converts a dictionary of parameter values to a correctly ordered vector.
     pnew = ModelingToolkit.varmap_to_vars([aorta.Ees => aorta_Ees * 200e6,
-                                           l_ventricle.Ees => l_ventricle_Ees * 200e6,
+                                           ventricle.Ees => ventricle_Ees * 200e6,
                                            systemic_resistance.R => systemic_resistance_R * 50e6,       
                                            card_driver.C => C], 
                                                             p_order, 
@@ -216,12 +216,12 @@ from the Turing.jl documentation.
 ```julia
 
 mean_aorta_Ees = mean(chain[:aorta_Ees])
-mean_l_ventricle_Ees = mean(chain[:l_ventricle_Ees])
+mean_ventricle_Ees = mean(chain[:ventricle_Ees])
 mean_systemic_resistance_R = mean(chain[:systemic_resistance_R])
 mean_C = mean(chain[:C])
 
 p_new = ModelingToolkit.varmap_to_vars([aorta.Ees => mean_aorta_Ees * 200e6,
-                                        l_ventricle.Ees => mean_l_ventricle_Ees * 200e6,
+                                        ventricle.Ees => mean_ventricle_Ees * 200e6,
                                         systemic_resistance.R => mean_systemic_resistance_R * 50e6,
                                         card_driver.C => mean_C], 
                                                             p_order, 
