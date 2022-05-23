@@ -36,7 +36,7 @@ vline!(abp_plot, qrs.seconds, labels = "QRS")
 
 
 
-Now we compose the model
+## Compose the model using components from CardiovascularModels.jl
 
 ```julia
 @variables t
@@ -46,7 +46,7 @@ D = Differential(t)
 @named ventricle = Ventricle(Ees = 200e6,
     Vd = 0., V0 = 0., λ = 33e3, P0 = 10.)
 
-# This cardia driver function uses a vector of qrs complexes 
+# This cardiac driver function uses a vector of qrs complexes 
 # to indicate when a contraction starts.
 @named card_driver = qrsDriver(qrs_times = qrs.seconds)
 
@@ -79,6 +79,7 @@ eqs_con = serial_connect(vein,
 eqs_comb = [eqs_driver; eqs_con]
 
 # ODE parameters
+# We put 2.25 liters of blood in circulation.
 volume_start = [ventricle.V => 1e-4, 
     aorta.V => 1.5e-4,
     vein.V => 2e-3]
@@ -91,7 +92,7 @@ time_span = (0.0, 10.0)
 
 problem = ODEProblem(structural_simplify(connected), volume_start, time_span, [])
 
-sol = solve(problem, AutoTsit5(Rosenbrock23()); dtmax = 0.01, reltol = 1e-6)
+sol = solve(problem, Tsit5(); dtmax = 0.01, reltol = 1e-6)
 ```
 
 
@@ -131,7 +132,7 @@ plot(plot_p1, plot_p2, layout = (2,1), ylabel = "mmHg", legend = :outertop)
 
 
 
-# Parameter estimation with Touring.jl
+# Parameter estimation with Turing.jl
 
 We use Turing.jl to estimate four of the model parameters.
 
