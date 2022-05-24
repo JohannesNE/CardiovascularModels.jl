@@ -19,7 +19,7 @@ D = Differential(t)
 @named pulmonary_valve = Valve(R = 4e6)
 
 # Pulmonary artery
-@named pulmonary_artery = Vessel(Ees = 200e6, Vd = 100e-6)
+@named pulmonary_artery = ElasticVessel(Ees = 200e6, Vd = 100e-6)
 
 @named pulmonary_resistance = Resistor(R = 10e6)
 
@@ -32,7 +32,7 @@ eqs_driver = [
 pulmonary_pressure(t, resp_rate = 14, p_max = 1e3) = 0.5 * p_max * (1-cos(2 * π * t * 14/60))
 @register pulmonary_pressure(t)
 
-@named pulmonary_vein = Vessel(Ees = 5e6, Vd = 500e-6, ext_pressure = "free")
+@named pulmonary_vein = ElasticVessel(Ees = 5e6, Vd = 500e-6, ext_pressure = "free")
 @named tricuspid_valve = Valve(R = 10e6)
 
 eqs_lung = [

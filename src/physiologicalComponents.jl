@@ -25,13 +25,13 @@ function Valve(; name, R::Float64)
 end
 
 """
-Vessel model (e.g. artery or vein)
+Vessel model (e.g. artery or vein). This Vessel has an elasticity but no inertia.
 
 # Arguments
    - `Ees`: Elasticity.
    - `Vd`: Unstressed volume (volume with no pressure).
 """
-function Vessel(; name, 
+function ElasticVessel(; name, 
     # Parameters
     Ees::Float64, 
     Vd::Float64,

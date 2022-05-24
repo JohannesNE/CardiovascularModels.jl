@@ -17,7 +17,7 @@ D = Differential(t)
 @named aortic_valve = Valve(R = 6e6)
 
 # Aorta
-@named aorta = Vessel(Ees = 200e6, Vd = 100e-6)
+@named aorta = ElasticVessel(Ees = 200e6, Vd = 100e-6)
 
 @named systemic_resistance = Resistor(R = 50e6)
 
@@ -25,7 +25,7 @@ eqs_driver = [
     l_ventricle.drv ~ card_driver.contraction
 ]
 
-@named vein = Vessel(Ees = 5e6, Vd = 500e-6)
+@named vein = ElasticVessel(Ees = 5e6, Vd = 500e-6)
 @named mitral_valve = Valve(R = 10e6)
 
 # Connect systems in series.
