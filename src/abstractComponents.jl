@@ -6,7 +6,7 @@
     ODESystem(Equation[], t, sts, []; name=name)
 end
 
-function VascularCompartment(; name, PCargs...)
+function CompliantCompartment(; name, PCargs...)
 
     @named pressurizedCompartment = PressurizedCompartment(;PCargs...)
 
@@ -22,9 +22,29 @@ function VascularCompartment(; name, PCargs...)
         in.P ~ out.P
     ]
     
-    pressurizedVascularCompartment = extend(ODESystem(eqs, t, [V, P], []; name), 
+    pressurizedCompliantCompartment = extend(ODESystem(eqs, t, [V, P], []; name), 
                                             pressurizedCompartment)  
-    compose(pressurizedVascularCompartment, in, out)  
+    compose(pressurizedCompliantCompartment, in, out)  
+end
+
+function InertialCompartment(; name, PCargs...)
+
+    @named pressurizedCompartment = PressurizedCompartment(;PCargs...)
+
+    @named in = Con()
+    @named out = Con()
+
+    @variables V(t) P(t) 
+
+    # Flow is positive into the component.
+    eqs = [
+        D(V) ~ in.Q + out.Q,
+        ΔP ~ in.P - out.P
+    ]
+    
+    pressurizedCompliantCompartment = extend(ODESystem(eqs, t, [V, P], []; name), 
+                                            pressurizedCompartment)  
+    compose(pressurizedCompliantCompartment, in, out)  
 end
 
 function VolumelessComponent(; name)
@@ -48,7 +68,7 @@ end
   - `ext_pressure` and `tm_pressure`: If set to a number{Float64}, 
   this will fix the pressure to that value. 
   If set to `"free"`, no equation is made for controling
-  the state (this should be done in an inheriting system (e.g. `VascularCompartment()`)).
+  the state (this should be done in an inheriting system (e.g. `CompliantCompartment()`)).
   
 """
 function PressurizedCompartment(;name, ext_pressure = 0., tm_pressure = "free")

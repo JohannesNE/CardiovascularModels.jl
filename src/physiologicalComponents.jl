@@ -37,7 +37,7 @@ function Vessel(; name,
     Vd::Float64,
     ext_pressure=0.)
 
-    @named compartment = VascularCompartment(;ext_pressure)
+    @named compartment = CompliantCompartment(;ext_pressure)
     @unpack V, P_tm = compartment
 
     ps = @parameters (Ees = Ees, Vd = Vd)
@@ -70,7 +70,7 @@ function Ventricle(; name,
     ext_pressure = 0.,
     )
 
-    @named compartment = VascularCompartment(;ext_pressure)
+    @named compartment = CompliantCompartment(;ext_pressure)
     @unpack V, P_tm = compartment
 
     ps = @parameters (
