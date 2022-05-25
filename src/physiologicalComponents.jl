@@ -97,7 +97,7 @@ function Ventricle(; name,
     
 end
 
-function Const_Pressure(; name, 
+function ConstantPressure(; name, 
     # Parameters
     P::Float64)
 

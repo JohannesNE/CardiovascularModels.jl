@@ -6,9 +6,9 @@ using ModelingToolkit, OrdinaryDiffEq
 D = Differential(t)
 
 include("abstractComponents.jl")
-export Con, CompliantCompartment, VolumelessComponent, PressurizedCompartment
+export Con, CompliantCompartment, InertialCompartment, VolumelessComponent, PressurizedCompartment
 include("physiologicalComponents.jl")
-export Ventricle, ElasticVessel, qrsDriver, automaticDriver, Const_Pressure, Resistor, Valve
+export Ventricle, ElasticVessel, qrsDriver, automaticDriver, ConstantPressure, Resistor, Valve
 
 include("helpers.jl")
 
