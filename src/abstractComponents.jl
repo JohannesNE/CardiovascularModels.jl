@@ -27,24 +27,45 @@ function CompliantCompartment(; name, PCargs...)
     compose(pressurizedCompliantCompartment, in, out)  
 end
 
-function InertialCompartment(; name, PCargs...)
+"""
+This compartment can be thought of as a stiff tube with a fluid that has
+mass. Inertia is the resistance to change in velocity of the fluid.
 
-    @named pressurizedCompartment = PressurizedCompartment(;PCargs...)
+# Arguments
+  - `Area`: [m^2] cross-sectional area of the compartment.
+  - `V`: [m^3] Volume of the compartment. In the inertia compartment, Volume is a parameter (constant), not a state.
+  - `ρ`: [kg/m^3] Density of the fluid.
+  - `Q_start`: Initial condition for flow.
+"""
+function InertiaCompartment(; name, 
+                               Area::Float64, 
+                               V::Float64, 
+                               ρ::Float64 = 1060., # kg/m^3.
+                               Q_start::Float64 = 0.)
+
+    @named volumelessComponent = VolumelessComponent()
+
+    @unpack ΔP, Q = volumelessComponent
 
     @named in = Con()
     @named out = Con()
-
-    @variables V(t) P(t) 
+    
+    ps = @parameters(
+        V = V,
+        Area = Area,
+        ρ = ρ
+    )    
 
     # Flow is positive into the component.
     eqs = [
-        D(V) ~ in.Q + out.Q,
-        ΔP ~ in.P - out.P
+        # Inductance equation.
+        # L = ρ * V/Area^2 = rho * length / Area.
+        D(Q) ~ ΔP / (ρ * V/Area^2)
     ]
     
-    pressurizedCompliantCompartment = extend(ODESystem(eqs, t, [V, P], []; name), 
-                                            pressurizedCompartment)  
-    compose(pressurizedCompliantCompartment, in, out)  
+    InertiaCompartment = extend(ODESystem(eqs, t, [], ps; name, defaults = [Q => Q_start]),
+                                            volumelessComponent)  
+    compose(InertiaCompartment, in, out)  
 end
 
 function VolumelessComponent(; name)
