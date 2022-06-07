@@ -8,7 +8,8 @@ D = Differential(t)
 include("abstractComponents.jl")
 export Con, CompliantCompartment, InertiaCompartment, VolumelessComponent, PressurizedCompartment
 include("physiologicalComponents.jl")
-export Ventricle, ElasticVessel, qrsDriver, automaticDriver, ConstantPressure, Resistor, Valve
+export Ventricle, ElasticVessel, DampedElasticVessel
+export qrsDriver, automaticDriver, ConstantPressure, Resistor, Valve
 
 include("helpers.jl")
 

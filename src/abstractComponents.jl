@@ -13,16 +13,17 @@ function CompliantCompartment(; name, PCargs...)
     @named in = Con()
     @named out = Con()
 
-    @variables V(t) P(t)
+    sts = @variables V(t) P(t) dV(t)
 
     # Flow is positive into the component.
     eqs = [
-        D(V) ~ in.Q + out.Q,
+        D(V) ~ dV,
+        dV ~ in.Q + out.Q,
         in.P ~ P,
-        in.P ~ out.P
+        out.P ~ P
     ]
     
-    pressurizedCompliantCompartment = extend(ODESystem(eqs, t, [V, P], []; name), 
+    pressurizedCompliantCompartment = extend(ODESystem(eqs, t, sts, []; name), 
                                             pressurizedCompartment)  
     compose(pressurizedCompliantCompartment, in, out)  
 end

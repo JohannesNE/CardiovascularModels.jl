@@ -25,7 +25,7 @@ function Valve(; name, R::Float64)
 end
 
 """
-Vessel model (e.g. artery or vein). This Vessel has an elasticity but no inertia.
+Vessel model (e.g. artery or vein). This Vessel has an elasticity but no inertia or dampening.
 
 # Arguments
    - `Ees`: Elasticity.
@@ -47,6 +47,37 @@ function ElasticVessel(; name,
     ]
 
     extend(ODESystem(eqs, t, [], ps; name), compartment)  
+end
+
+"""
+Vessel model (e.g. artery or vein). This Vessel has an elasticity and dampening.
+
+# Arguments
+   - `Ees`: Elasticity.
+   - `Vd`: Unstressed volume (volume with no pressure).
+   - `R_damp`: Damping resistance (vessel wall resistance to movement).
+"""
+function DampedElasticVessel(; name, 
+    # Parameters
+    Ees::Float64, 
+    Vd::Float64,
+    R_damp::Float64 = 0.,
+    ext_pressure=0.)
+
+    @named compartment = CompliantCompartment(;ext_pressure)
+    @unpack V, P_tm, dV = compartment
+
+    sts = @variables (P_elastic(t), P_damp(t) = 0.)
+
+    ps = @parameters (Ees = Ees, Vd = Vd, R_damp = R_damp)
+
+    eqs = [
+        P_elastic ~ max(0, Ees*(V-Vd)),
+        dV ~ P_damp / R_damp,
+        P_tm ~ P_elastic + P_damp
+    ]
+
+    extend(ODESystem(eqs, t, sts, ps; name), compartment)  
 end
 
 """
