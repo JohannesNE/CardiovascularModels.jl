@@ -63,82 +63,105 @@ begin
 D = Differential(t)
 
 # Ventricle
-@named ventricle = Ventricle(Ees = 200e6,
+@named lventricle = Ventricle(Ees = 200e6,
     Vd = 0., V0 = 0., λ = 33e3, P0 = 10.)
+	
+@named aortic_valve = Valve(R = 10e6)
+
+# Aorta
+@named aorta = ElasticVessel(Ees = 100e6, Vd = 0.)
+
+@named sys_resistance = Resistor(R = 50e6)
+
+
+@named sys_vein = ElasticVessel(Ees = 1e6, Vd = 0.)
+@named tricusp_valve = Valve(R = 2e6)
+
+@named rventricle = Ventricle(Ees = 40e6,
+    Vd = 0., V0 = 0., λ = 10e3, P0 = 10.)
+	
+@named pulm_valve = Valve(R = 2e6)
+
+@named pulm_artery = ElasticVessel(Ees = 50e6, Vd = 0.)
+
+@named pulm_resistance = Resistor(R = 10e6)
+
+@named pulm_vein = ElasticVessel(Ees = 10e6, Vd = 0.)
+
+	
+@named mitral_valve = Valve(R = 5e6)
+
+
 
 # This cardiac driver function uses a vector of qrs complexes 
 # to indicate when a contraction starts.
-@named card_driver = qrsDriver(qrs_times = qrs.seconds, B= 150.)
-
-@named aortic_valve = Valve(R = 0.1e6)
-
-# Aorta
-@named aorta1 = DampedElasticVessel(Ees = 250e6, Vd = 5e-6, R_damp = 4e6)
-@named aorta2 = DampedElasticVessel(Ees = 250e6, Vd = 100e-6, R_damp = 4e6)
-
-@named systemic_resistance = Resistor(R = 25e6)
+@named card_driver = qrsDriver(qrs_times = qrs.seconds)
 
 eqs_driver = [
-    ventricle.drv ~ card_driver.contraction
+    lventricle.drv ~ card_driver.contraction,
+    rventricle.drv ~ card_driver.contraction
 ]
-
-@named vein = ElasticVessel(Ees = 5e6, Vd = 500e-6)
-@named mitral_valve = Valve(R = 10e6)
 end
 
-# ╔═╡ 697cf823-1650-49a6-99cb-647c3d1c563d
-
-
-# ╔═╡ d48bca66-835e-43ce-b1dc-7b9c11b378b7
-md"### Vessel with Inertia"
-
-# ╔═╡ 380ad5b0-c01d-4895-9ba8-218985e780c4
-@named aortaInertia = InertiaCompartment(Area = 4e-4, V = 0.15e-3)
-
-# ╔═╡ b41261bc-31dd-44ef-9cef-20be2da3149c
-begin
-	# Connect systems in series.
-	# vein.out -> mitral_valve.in
-	# mitral_valve.out -> ventricle.in
-	# etc.
-	eqs_con = serial_connect(vein, 
-	    mitral_valve, 
-	    ventricle,
-	    aortic_valve,
-	    aorta1,
-		aortaInertia,
-		aorta2,
-	    systemic_resistance,
-	    vein)
+# ╔═╡ 9a10b9b9-0c16-4d8e-bac2-695016c8746e
+serial_connection_eqs = serial_connect(
+	lventricle,
+	aortic_valve,
+	aorta,
+	sys_resistance,
+	sys_vein,
+	tricusp_valve,
+	rventricle,
+	pulm_valve,
+	pulm_artery,
+	pulm_resistance,
+	pulm_vein,
+	mitral_valve,
+	lventricle
 	
-	eqs_comb = [eqs_driver; eqs_con]
-end
+)
 
-# ╔═╡ a8a67950-deb8-41a2-9369-7955a973faec
-begin
-	# ODE parameters
-	# We put 2.25 liters of blood in circulation.
-	volume_start = [ventricle.V => 1e-4, 
-	    aorta1.V => 0.5e-4,
-	    aorta2.V => 1.5e-4,
-	    vein.V => 2e-3]
-	time_span = (0.0, 10.0)
-	
-end
+# ╔═╡ e9cc72b8-f19b-44db-9a8b-8acf3c0870f3
+eqs_comb = [serial_connection_eqs; eqs_driver]
 
 # ╔═╡ c6d0eedb-2ed1-42d9-b323-f218052f7335
 @named hemo_sys = ODESystem(eqs_comb, t, [], []; 
 		systems = [
-			ventricle, card_driver, aortic_valve, 
-			aorta1, 
-			aortaInertia, 
-			aorta2, systemic_resistance, vein, mitral_valve]);
+	lventricle,
+	aortic_valve,
+	aorta,
+	sys_resistance,
+	sys_vein,
+	tricusp_valve,
+	rventricle,
+	pulm_valve,
+	pulm_artery,
+	pulm_resistance,
+	pulm_vein,
+	mitral_valve,
+			card_driver
+		]);
+
+# ╔═╡ 6ddbfd8b-9b20-4ef2-ac62-7271b6f9c684
+time_span = (0.,10.)
+
+# ╔═╡ 90599f97-6af6-4722-8247-d29b185fa7ae
+volume_start = [
+	lventricle.V => 0.1e-3, 
+	rventricle.V => 0.1e-3, 
+	aorta.V => 0.2e-3,
+	sys_vein.V => 2e-3,
+    pulm_artery.V => 0.1e-3,
+    pulm_vein.V => 0.5e-3
+
+
+]
 
 # ╔═╡ 3db57c48-9451-42d6-882e-61f8268c972f
 problem = ODEProblem(structural_simplify(hemo_sys), volume_start, time_span, [])
 
 # ╔═╡ 3d7129ad-c697-460b-82b0-9c30fe4b1dc7
-sol_def = solve(problem, Rodas5(); dtmax = 0.01, reltol = 1e-6);
+sol_def = solve(problem, Tsit5(); dtmax = 0.01, reltol = 1e-6);
 
 # ╔═╡ 1222e0ba-d300-4925-8678-6d87b1f3b354
 begin
@@ -202,7 +225,7 @@ reset_params; @bind new_params confirm(make_param_sliders(p_order, p_def))
 
 
 # ╔═╡ 872e270c-de6f-49f8-bd77-fb4725602adf
-sol = solve(problem, Rodas5(); 
+sol = solve(problem, Tsit5(); 
                       p = new_params, 
                       dtmax = 0.01, reltol = 1e-4);
 
@@ -211,7 +234,7 @@ md"## Observed vs fitted"
 
 # ╔═╡ b929bbf0-ac75-4ea2-82b4-03329b635cf2
 let
-	p1 = plot(sol, vars=[(pascal2mmhg, 0,aorta2.P)], tspan =  (1,6),
+	p1 = plot(sol, vars=[(pascal2mmhg, 0,aorta.P)], tspan =  (1,10),
                 ylabel = "mmHg", label = "Model")
 	plot!(p1, abp.seconds, abp.ABP, label = "Observed", 
 	legend=:outertop)
@@ -223,8 +246,15 @@ md"## Pressure plots [mmHg]"
 
 # ╔═╡ 9a4724b1-50a0-4fae-8cae-fa4bf82f5be5
 let
-	plot_p1 = plot(sol, vars=[(pascal2mmhg, 0,ventricle.P), (pascal2mmhg, 0,aorta1.P)], tspan =  (1,6));
-	plot_p2 = plot(sol, vars=[(pascal2mmhg, 0, vein.P)], tspan =  (1,6));
+	plot_p1 = plot(sol, vars=[
+		(pascal2mmhg, 0,lventricle.P), 
+		(pascal2mmhg, 0,aorta.P)], tspan =  (1,6));
+	plot_p2 = plot(sol, vars=[
+		(pascal2mmhg, 0, sys_vein.P),
+		(pascal2mmhg, 0, rventricle.P),
+		(pascal2mmhg, 0, pulm_artery.P),
+		(pascal2mmhg, 0, pulm_vein.P)
+	], tspan =  (1,6));
 	plot(plot_p1, plot_p2, layout = (2,1), ylabel = "mmHg", legend = :outertop)
 	
 end
@@ -234,8 +264,14 @@ md"## Volume plots [ml]"
 
 # ╔═╡ 7d684352-d2d7-4c1e-90ae-dfdcce7fe96c
 let
-	plot_v1 = plot(sol, vars=[(m32ml, 0, ventricle.V), (m32ml, 0, aorta1.V)], tspan =  (1,6));
-	plot_v2 = plot(sol, vars=[(m32ml, 0, vein.V)], tspan =  (1,6));
+	plot_v1 = plot(sol, vars=[
+		(m32ml, 0, lventricle.V), 
+		(m32ml, 0, aorta.V),
+		(m32ml, 0, rventricle.V),
+		(m32ml, 0, pulm_artery.V),
+		(m32ml, 0, pulm_vein.V)
+	], tspan =  (1,6));
+	plot_v2 = plot(sol, vars=[(m32ml, 0, sys_vein.V)], tspan =  (1,6));
 	plot(plot_v1, plot_v2, layout = (2,1), ylabel = "ml", legend = :outertop)
 end
 
@@ -277,12 +313,11 @@ pnew = ModelingToolkit.varmap_to_vars([
 # ╠═047fa4a0-88f1-4fa6-9636-1c49687fe229
 # ╠═1365e025-358b-426a-9567-4d836f44e260
 # ╠═1c5ba960-86ea-4c97-8bca-e5e70f28f29c
-# ╠═697cf823-1650-49a6-99cb-647c3d1c563d
-# ╠═d48bca66-835e-43ce-b1dc-7b9c11b378b7
-# ╠═380ad5b0-c01d-4895-9ba8-218985e780c4
-# ╠═b41261bc-31dd-44ef-9cef-20be2da3149c
-# ╠═a8a67950-deb8-41a2-9369-7955a973faec
+# ╠═9a10b9b9-0c16-4d8e-bac2-695016c8746e
+# ╠═e9cc72b8-f19b-44db-9a8b-8acf3c0870f3
 # ╠═c6d0eedb-2ed1-42d9-b323-f218052f7335
+# ╠═6ddbfd8b-9b20-4ef2-ac62-7271b6f9c684
+# ╠═90599f97-6af6-4722-8247-d29b185fa7ae
 # ╠═3db57c48-9451-42d6-882e-61f8268c972f
 # ╠═3d7129ad-c697-460b-82b0-9c30fe4b1dc7
 # ╠═1222e0ba-d300-4925-8678-6d87b1f3b354
